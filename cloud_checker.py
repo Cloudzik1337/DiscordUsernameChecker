@@ -272,7 +272,7 @@ print(ASCII)
 
 print(f"[{Colors.YELLOW}+{Colors.ENDC}] Loaded {Colors.CYAN}{len(combos)}{Colors.ENDC} combos")
 ask = input(f"How many threads {Colors.YELLOW}>>>{Colors.ENDC} ")
-for _ in range(1):
+for _ in range(5):
     print(f"Starting in {5-_}s. with {ask} threads (Ctrl+c Abort)", end="\r")
     sleep(1)
 ths = []
