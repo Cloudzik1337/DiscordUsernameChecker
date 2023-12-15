@@ -1,3 +1,5 @@
+
+[![Hits](https://hits.sh/github.com/Cloudzik1337/DiscordUsernameChecker.svg)](https://hits.sh/github.com/silentsoft/Cloudzik1337/DiscordUsernameChecker)
 [![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
 # CloudChecker
 
