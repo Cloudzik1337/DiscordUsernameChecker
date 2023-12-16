@@ -119,6 +119,7 @@ try:
             threads.append(thread)
         for th in threads:
             th.join()
+        input()
 
 except KeyboardInterrupt:
     print('\n\nExiting...')
