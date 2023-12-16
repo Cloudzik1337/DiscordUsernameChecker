@@ -104,15 +104,19 @@ class Pomelo:
         )
 
 
-    def check(self, name):
+    def check(self, name: list):
         self.restart_session()
         global RPS, REQUESTS, WORKS, TAKEN
         while True:
             try:
                 try:
                     name, proxy = name
-                except:
-                    proxy = None
+                    
+                except Exception as e:
+                    if proxy_cycle is None:
+                        proxy = None
+                    else:
+                        proxy = next(proxy_cycle)
                 if proxy is not None:
                     proxy = f"http://{str(proxy).strip()}"
                 r = self.session.post(
@@ -137,14 +141,16 @@ class Pomelo:
            
                 #rate limited
                 elif r.status_code == 429:
-                    if proxy is None:
-                        try:
-                            return "RATELIMITED", r.json()["retry_after"], r.status_code
-                        except:
-                            with open("errors.txt", "w") as f:
-                                f.write(f"{name, r.json(), r.status_code}\n")
-                                f.close()
-                            return "RATELIMITED", None, r.status_code
+                    if proxy is None or proxy == "None" or proxy == "":
+                        
+                       
+                        
+                        #sleep for rate limit
+                        # print(f"[{Colors.YELLOW}?{Colors.ENDC}] TIMEOUT    : {Colors.CYAN}{json}{Colors.ENDC},{' '*(8-int(len(str(json))))}RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC},{' '*(18-int(len(str(json)))-1)}proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
+                        print("PROXYLESS RATELIMITED SLEEPING")
+                        sleep(r.json()["retry_after"]/1000)
+                        name = [name, next(proxy_cycle)]
+                        self.check(name)
                 
             except:
             # timeout
@@ -217,11 +223,12 @@ if len(combos) == 0:
         f.close()
 queue = queue.Queue()
 # actually load only random 50k line (Long list will take too long to load)
-# combos = random.sample(combos, 50000)
+combos = random.sample(combos, 50000)
 for name in combos:
     print(f"[{Colors.YELLOW}+{Colors.ENDC}] Adding username = {Colors.CYAN}{name}{Colors.ENDC}", end="\r")
     
     name = [name.strip(), next(proxy_cycle)]
+
     queue.put(name)
 
 def worker():
@@ -277,7 +284,7 @@ print(ASCII)
 
 print(f"[{Colors.YELLOW}+{Colors.ENDC}] Loaded {Colors.CYAN}{len(combos)}{Colors.ENDC} combos")
 ask = input(f"How many threads {Colors.YELLOW}>>>{Colors.ENDC} ")
-for _ in range(5):
+for _ in range(1):
     print(f"Starting in {5-_}s. with {ask} threads (Ctrl+c Abort)", end="\r")
     sleep(1)
 ths = []
