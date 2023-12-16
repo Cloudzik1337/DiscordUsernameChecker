@@ -27,7 +27,14 @@ https://github.com/Cloudzik1337/DiscordUsernameChecker/assets/92876777/8066235e-
 - Python 3.x
 - tls_client
 
-### Installation
+## Installation
+
+### Video Tutorial 
+
+https://github.com/Cloudzik1337/DiscordUsernameChecker/assets/92876777/757d3d04-603e-449c-83c8-817e1f5c1f3c
+
+### Text Tutorial
+
 1. Clone the repository:
 
 ```bash
