@@ -45,8 +45,10 @@ python cloud_checker.py
 
 ## Usage
 1. Configure your proxies by adding them to the proxies.txt file.
-2. Customize the script by adjusting parameters like the length of the usernames, the number of threads, etc.
-3. Execute the script, and it will start checking the availability of Discord usernames.
+2. [CheapProxies](https://www.wtfproxy.com/?ref=o8hX4mfY5hfhFUSZEl146) here 3 usd / gb
+3. (Proxyless) works but thread sleeps on ratelimit (ultra slow)
+4. Customize the script by adjusting parameters like the length of the usernames, the number of threads, etc.
+5. Execute the script, and it will start checking the availability of Discord usernames.
 ## Usage Dictionary Validator
 1. Run file
 2. Enter ammount of thread (for smaller than 5k dont use more than 5)
