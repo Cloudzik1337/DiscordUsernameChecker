@@ -223,7 +223,10 @@ if len(combos) == 0:
         f.close()
 queue = queue.Queue()
 # actually load only random 50k line (Long list will take too long to load)
-combos = random.sample(combos, 50000)
+try:
+    combos = random.sample(combos, 50000)
+except ValueError:
+    pass
 for name in combos:
     print(f"[{Colors.YELLOW}+{Colors.ENDC}] Adding username = {Colors.CYAN}{name}{Colors.ENDC}", end="\r")
     
@@ -296,8 +299,7 @@ for i in range(int(ask)):
     t.start()
     ths.append(t)
     
-for t in ths:
-    t.join()
+
 
 queue.join()
 
