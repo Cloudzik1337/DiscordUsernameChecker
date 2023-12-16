@@ -1,31 +1,36 @@
-
+"""Cloud Checker by Cloudzik1337 DC: byid"""
 
 import itertools
 import string
 import queue
 import threading
-from time import sleep
+from time import sleep, time
 import traceback
 import random
 import os
 import tls_client
 
 lock = threading.Lock()
-with open("names.txt", "a") as f: f.close()
-with open("proxies.txt", "a") as f: f.close()
-with open("unchecked_names.txt", "a") as f: f.close()
-with open("errors.txt", "a") as f: f.close()
-proxies = open("proxies.txt", "r").read().splitlines()
+with open("names.txt",              "a",        encoding='utf-8') as f: f.close()
+with open("proxies.txt",            "a",        encoding='utf-8') as f: f.close()
+with open("unchecked_names.txt",    "a",        encoding='utf-8') as f: f.close()
+with open("errors.txt",             "a",        encoding='utf-8') as f: f.close()
+with open("proxies.txt",            "r",        encoding='utf-8')as proxies:proxies= proxies.read().splitlines()
+
+
+
+
+
 if len(proxies) == 0:
     proxies = [None]
 proxy_cycle = itertools.cycle(proxies)
 REQUETS_CLIENT_IDENTIFIER = "chrome_113"
 
 #Globals
-RPS = 0
-REQUESTS = 0
-WORKS = 0
-TAKEN = 0
+RPS =       0
+REQUESTS =  0
+WORKS =     0
+TAKEN =     0
 
 
 
@@ -41,40 +46,26 @@ class _Colors:
         return f'\033[{code}m'
 
 
-    ENDC: str = _color_code(0)
-    BOLD: str = _color_code(1)
-    UNDERLINE: str = _color_code(4)
-    BLACK: str = _color_code(30)
-    RED: str = _color_code(31)
-    GREEN: str = _color_code(32)
-    YELLOW: str = _color_code(33)
-    BLUE: str = _color_code(34)
-    MAGENTA: str = _color_code(35)
-    CYAN: str = _color_code(36)
-    WHITE: str = _color_code(37)
-    REDBG: str = _color_code(41)
-    GREENBG: str = _color_code(42)
-    YELLOWBG: str = _color_code(43)
-    BLUEBG: str = _color_code(44)
-    MAGENTABG: str = _color_code(45)
-    CYANBG: str = _color_code(46)
-    WHITEBG: str = _color_code(47)
-    GREY: str = _color_code(90)
-    REDGREY: str = _color_code(91)
-    GREENGREY: str = _color_code(92)
-    YELLOWGREY: str = _color_code(93)
-    BLUEGREY: str = _color_code(94)
-    MAGENTAGREY: str = _color_code(95)
-    CYANGREY: str = _color_code(96)
-    WHITEGREY: str = _color_code(97)
-    GREYBG: str = _color_code(100)
-    REDGREYBG: str = _color_code(101)
-    GREENGREYBG: str = _color_code(102)
-    YELLOWGREYBG: str = _color_code(103)
-    BLUEGREYBG: str = _color_code(104)
-    MAGENTAGREYBG: str = _color_code(105)
-    CYANGREYBG: str = _color_code(106)
-    WHITEGREYBG: str = _color_code(107)
+    ENDC: str =         _color_code(0)
+    BOLD: str =         _color_code(1)
+    UNDERLINE: str =    _color_code(4)
+    BLACK: str =        _color_code(30)
+    RED: str =          _color_code(31)
+    GREEN: str =        _color_code(32)
+    YELLOW: str =       _color_code(33)
+    BLUE: str =         _color_code(34)
+    MAGENTA: str =      _color_code(35)
+    CYAN: str =         _color_code(36)
+    WHITE: str =        _color_code(37)
+    REDBG: str =        _color_code(41)
+    GREENBG: str =      _color_code(42)
+    YELLOWBG: str =     _color_code(43)
+    BLUEBG: str =       _color_code(44)
+    MAGENTABG: str =    _color_code(45)
+    CYANBG: str =       _color_code(46)
+    WHITEBG: str =      _color_code(47)
+    GREY: str =         _color_code(90)
+
 
 Colors = _Colors()
 
@@ -85,33 +76,36 @@ Colors = _Colors()
 
 
 def clear():
+    """Clear the screen"""
     os.system('cls' if os.name=='nt' else 'clear')
 clear()
 class Pomelo:
+    """Cloud Checker"""
     def __init__(self):
+        """Initiate the class"""
         self.endpoint = "https://discord.com/api/v9"
         self.headers_post = {"Content-Type": "application/json"}
         self.session = tls_client.Session(
             client_identifier=REQUETS_CLIENT_IDENTIFIER,
             random_tls_extension_order=True
-        )
-        
+        )  
+
     def restart_session(self):
+        """Restart the session"""
         self.session = tls_client.Session(
             client_identifier=REQUETS_CLIENT_IDENTIFIER,
-            random_tls_extension_order=True
-            
+            random_tls_extension_order=True            
         )
 
-
     def check(self, name: list):
+        """Check if the name is available"""
         self.restart_session()
         global RPS, REQUESTS, WORKS, TAKEN
         while True:
             try:
                 try:
                     name, proxy = name
-                    
+
                 except Exception as e:
                     if proxy_cycle is None:
                         proxy = None
@@ -126,32 +120,27 @@ class Pomelo:
                     proxy = proxy
                 ) 
                 REQUESTS += 1
-          
+
                 if r.status_code in [200, 201, 204]:
                     if r.json()["taken"]:
                         TAKEN += 1
                         return False, r.json(), r.status_code
-                        
-                        
-                    else:
-                        WORKS += 1
-                        if str(r.json()) in ["", None, "{}"]:
-                            return False, None, r.status_code
-                        return True, r.json(), r.status_code
-           
+
+                    WORKS += 1
+                    if str(r.json()) in ["", None, "{}"]:
+                        return False, None, r.status_code
+                    return True, r.json(), r.status_code
+
                 #rate limited
                 elif r.status_code == 429:
                     if proxy is None or proxy == "None" or proxy == "":
-                        
-                       
-                        
-                        #sleep for rate limit
-                        # print(f"[{Colors.YELLOW}?{Colors.ENDC}] TIMEOUT    : {Colors.CYAN}{json}{Colors.ENDC},{' '*(8-int(len(str(json))))}RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC},{' '*(18-int(len(str(json)))-1)}proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
+
                         print("PROXYLESS RATELIMITED SLEEPING")
                         sleep(r.json()["retry_after"]/1000)
                         name = [name, next(proxy_cycle)]
                         self.check(name)
-                
+
+
             except:
             # timeout
                 with lock:
@@ -160,14 +149,9 @@ class Pomelo:
                         with open("errors.txt", "w") as f:
                             f.write(f"{exception}\n")
                             f.close()
+                        sleep(1) # rest for 1s
                     except:
                         pass
-                
-                        
-        
-
-        
-
 
 
 g = Colors.GREY
@@ -205,20 +189,21 @@ print(ASCII)
 CLOUDCHECKER = Pomelo()
 
 # username can contain letters, numbers, and underscores
-chars = string.ascii_lowercase + string.digits + "_" + '.'
+CHARS = string.ascii_lowercase + string.digits + "_" + '.'
 
 with open("unchecked_names.txt", "r") as f:
     combos = f.read().splitlines()
     f.close()
+
 if len(combos) == 0:
-    combos = itertools.product(chars, repeat=int(input("Length of username: ")))
-    with open("unchecked_names.txt", "w") as f:
+    combos = itertools.product(CHARS, repeat=int(input("Length of username: ")))
+    with open("unchecked_names.txt", "w", encoding='utf-8') as f:
         
         for i in combos:
             f.write("".join(i))
             f.write("\n")
         f.close()
-    with open("unchecked_names.txt", "r") as f:
+    with open("unchecked_names.txt", "r", encoding='utf-8') as f:
         combos = f.read().splitlines()
         f.close()
 queue = queue.Queue()
@@ -229,16 +214,15 @@ except ValueError:
     pass
 for name in combos:
     print(f"[{Colors.YELLOW}+{Colors.ENDC}] Adding username = {Colors.CYAN}{name}{Colors.ENDC}", end="\r")
-    
     name = [name.strip(), next(proxy_cycle)]
-
     queue.put(name)
 
+
 def worker():
-    
+    """Thread worker function"""
     while queue.qsize() > 0:
         
-        name= queue.get()
+        name = queue.get()
         try:
             available, json, status_code = CLOUDCHECKER.check(name)
         except:
@@ -249,38 +233,58 @@ def worker():
                     f.close()
             available, json, status_code = "ERROR", None, None
         name, proxy = name
-       
-        # if proxy cut it down to 10 chars
+
         proxy_formated = str(proxy[:10]+'*'*10) if proxy else 'Proxyless'
+
         with lock:
-            
+
             if available is True:
-                # Make print aligned so even if under was rate limited it will still be aligned
                 print(f"[{Colors.GREEN}+{Colors.ENDC}] Available  : {Colors.CYAN}{name}{Colors.ENDC},    RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC}, proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
-                with open("names.txt", "a") as f:
+                
+                with open("names.txt", "a", encoding='utf-8') as f:
                     f.write(name)
                     f.write("\n")
                     f.close()
+
             elif available == "RATELIMITED":
-                # add spaces to make = under aligned
+                
                 print(f"[{Colors.YELLOW}?{Colors.ENDC}] TIMEOUT    : {Colors.CYAN}{json}{Colors.ENDC},{' '*(8-int(len(str(json))))}RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC},{' '*(18-int(len(str(json)))-1)}proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
+            
             elif available == "ERROR":
-                with open("errors.txt", "a") as f:
+               
+                with open("errors.txt", "a", encoding='utf-8') as f:
                     f.write(f"{name, json, status_code}\n")
+            
             else:
-                # Make print aligned so even if under was rate limited it will still be aligned
                 print(f"[{Colors.RED}-{Colors.ENDC}]   Taken    : {Colors.CYAN}{name}{Colors.ENDC},    RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC},  proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
+       
         queue.task_done()                
 
 
 
 def RPS_CALCULATOR():
-    global RPS, REQUESTS
+    """Calculate RPS (Requests per second)"""
+    global RPS
     while True:
         RPS_BEFORE = REQUESTS
         sleep(1)
         RPS = REQUESTS - RPS_BEFORE
-        os.system(f'title "Requests = {REQUESTS} | RPS > {RPS}"') 
+start_time = time()        
+def TITLE_SPINNER():
+    """Fix for windows 11 console"""
+    TITLE = ["CloudChecker", "Avaible : {WORKS}", "Taken : {TAKEN}", "Requests : {REQUESTS}", "RPS : {RPS}", "Elapsed : {ELAPSED}s"]
+    while True:
+        for i in TITLE:
+            edited = i          
+            for _ in range(50):
+                edited = i.format(WORKS=WORKS, TAKEN=TAKEN, REQUESTS=REQUESTS, RPS=RPS, ELAPSED=round(time()-start_time))
+                os.system(f'title {edited}')
+                sleep(0.01)
+            sleep(1)
+
+threading.Thread(target=RPS_CALCULATOR, daemon=True).start()
+threading.Thread(target=TITLE_SPINNER, daemon=True).start()
+
 
 clear()
 print(ASCII)
@@ -291,7 +295,6 @@ for _ in range(5):
     print(f"Starting in {5-_}s. with {ask} threads (Ctrl+c Abort)", end="\r")
     sleep(1)
 ths = []
-threading.Thread(target=RPS_CALCULATOR, daemon=True).start()
 
 for i in range(int(ask)):
     t = threading.Thread(target=worker)
@@ -307,4 +310,4 @@ print(f"[{Colors.GREEN}+{Colors.ENDC}] Done")
 print(f"[{Colors.GREEN}+{Colors.ENDC}] Total requests = {Colors.CYAN}{REQUESTS}{Colors.ENDC}")
 print(f"[{Colors.GREEN}+{Colors.ENDC}] Total valid names = {Colors.CYAN}{WORKS}{Colors.ENDC}")
 print(f"[{Colors.GREEN}+{Colors.ENDC}] Total invalid names = {Colors.CYAN}{TAKEN}{Colors.ENDC}")
-
+print(f"[{Colors.GREEN}+{Colors.ENDC}] Total time = {Colors.CYAN}{round(time()-start_time)}{Colors.ENDC} seconds")
