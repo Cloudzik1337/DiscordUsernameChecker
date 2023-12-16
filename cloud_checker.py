@@ -138,15 +138,20 @@ class Pomelo:
                 #rate limited
                 elif r.status_code == 429:
                     if proxy is None:
-                        return "RATELIMITED", r.json()["retry_after"], r.status_code
-            
+                        try:
+                            return "RATELIMITED", r.json()["retry_after"], r.status_code
+                        except:
+                            with open("errors.txt", "w") as f:
+                                f.write(f"{name, r.json(), r.status_code}\n")
+                                f.close()
+                            return "RATELIMITED", None, r.status_code
                 
             except:
             # timeout
                 with lock:
                     try:
                         exception = traceback.format_exc()
-                        with open("errors.txt", "a") as f:
+                        with open("errors.txt", "w") as f:
                             f.write(f"{exception}\n")
                             f.close()
                     except:
@@ -194,7 +199,7 @@ print(ASCII)
 CLOUDCHECKER = Pomelo()
 
 # username can contain letters, numbers, and underscores
-chars = string.ascii_letters + string.digits + "_" + '.'
+chars = string.ascii_lowercase + string.digits + "_" + '.'
 
 with open("unchecked_names.txt", "r") as f:
     combos = f.read().splitlines()
@@ -212,16 +217,16 @@ if len(combos) == 0:
         f.close()
 queue = queue.Queue()
 # actually load only random 50k line (Long list will take too long to load)
-combos = random.sample(combos, 50000)
+# combos = random.sample(combos, 50000)
 for name in combos:
     print(f"[{Colors.YELLOW}+{Colors.ENDC}] Adding username = {Colors.CYAN}{name}{Colors.ENDC}", end="\r")
     
-    name = [name, next(proxy_cycle)]
+    name = [name.strip(), next(proxy_cycle)]
     queue.put(name)
 
 def worker():
     
-    while True:
+    while queue.qsize() > 0:
         
         name= queue.get()
         try:
@@ -255,7 +260,7 @@ def worker():
             else:
                 # Make print aligned so even if under was rate limited it will still be aligned
                 print(f"[{Colors.RED}-{Colors.ENDC}]   Taken    : {Colors.CYAN}{name}{Colors.ENDC},    RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC},  proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
-                
+        queue.task_done()                
 
 
 
@@ -272,7 +277,7 @@ print(ASCII)
 
 print(f"[{Colors.YELLOW}+{Colors.ENDC}] Loaded {Colors.CYAN}{len(combos)}{Colors.ENDC} combos")
 ask = input(f"How many threads {Colors.YELLOW}>>>{Colors.ENDC} ")
-for _ in range(5):
+for _ in range(1):
     print(f"Starting in {5-_}s. with {ask} threads (Ctrl+c Abort)", end="\r")
     sleep(1)
 ths = []
