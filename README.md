@@ -18,6 +18,8 @@ CloudChecker is a Python script for checking the availability of Discord usernam
 
 https://github.com/Cloudzik1337/DiscordUsernameChecker/assets/92876777/8066235e-91c8-4580-bc5f-138a619453aa
 
+![image](https://github.com/Cloudzik1337/DiscordUsernameChecker/assets/92876777/97153fdc-0548-4d8d-882b-532fbf9b7a1c)
+
 
 ## Getting Started
 
@@ -45,6 +47,10 @@ python cloud_checker.py
 1. Configure your proxies by adding them to the proxies.txt file.
 2. Customize the script by adjusting parameters like the length of the usernames, the number of threads, etc.
 3. Execute the script, and it will start checking the availability of Discord usernames.
+## Usage Dictionary Validator
+1. Run file
+2. Enter ammount of thread (for smaller than 5k dont use more than 5)
+3. Similiar + Hits will be saved to BetterNames.txt
 ## Additional Information
 1. Author: @cloudzik1377
 2. Discord: discord.cloudzik.me
