@@ -158,7 +158,7 @@ class Pomelo:
                     url=self.endpoint + "/unique-username/username-attempt-unauthed",
                     headers = self.headers_post,
                     json={"username": name},
-                    proxy = proxy
+                    proxies={"http": proxy, "https": proxy},
                 ) 
                 REQUESTS += 1
 
@@ -233,12 +233,14 @@ CLOUDCHECKER = Pomelo()
 # username can contain letters, numbers, and underscores
 CHARS = string.ascii_lowercase + string.digits + "_" + '.'
 
-with open("unchecked_names.txt", "r") as f:
+with open("unchecked_names.txt", "r", encoding='utf-8') as f:
     combos = f.read().splitlines()
     f.close()
+
 with open("config.json", "r") as f:
     config_str = f.read()
     f.close()
+
 if len(config_str) == 2 or os.path.getsize("config.json") == 0:
     ask_webhook = input(f"Send hits to webhook [y/n] {Colors.YELLOW}>>>{Colors.ENDC} ")
     if ask_webhook.lower() in confirmators:
@@ -264,9 +266,11 @@ if len(combos) == 0:
             f.write("".join(i))
             f.write("\n")
         f.close()
+    
     with open("unchecked_names.txt", "r", encoding='utf-8') as f:
         combos = f.read().splitlines()
         f.close()
+longest_name = max([len(name) for name in combos]) 
 queue = queue.Queue()
 # actually load only random 50k line (Long list will take too long to load)
 try:
@@ -289,7 +293,7 @@ def worker():
         except:
             with lock:
                 exception = traceback.format_exc()
-                with open("errors.txt", "a") as f:
+                with open("errors.txt", "a", encoding='utf-8') as f:
                     f.write(f"{exception}\n")
                     f.close()
             available, json, status_code = "ERROR", None, None
@@ -300,7 +304,7 @@ def worker():
         with lock:
 
             if available is True:
-                print(f"[{Colors.GREEN}+{Colors.ENDC}] Available  : {Colors.CYAN}{name}{Colors.ENDC},    RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC}, proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
+                print(f"[{Colors.GREEN}+{Colors.ENDC}] Available  : {Colors.CYAN}{name}{Colors.ENDC}, {' '*(longest_name-len(name))}RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC}, proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
                 
                 with open("names.txt", "a", encoding='utf-8') as f:
                     f.write(name)
@@ -309,7 +313,7 @@ def worker():
 
             elif available == "RATELIMITED":
                 
-                print(f"[{Colors.YELLOW}?{Colors.ENDC}] TIMEOUT    : {Colors.CYAN}{json}{Colors.ENDC},{' '*(8-int(len(str(json))))}RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC},{' '*(18-int(len(str(json)))-1)}proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
+                print(f"[{Colors.YELLOW}?{Colors.ENDC}] TIMEOUT    : {Colors.CYAN}{json}{Colors.ENDC}, {' '*(20-int(len(str(json))))}RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC},{' '*(18-int(len(str(json)))-1)}proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
             
             elif available == "ERROR":
                
@@ -317,7 +321,7 @@ def worker():
                     f.write(f"{name, json, status_code}\n")
             
             else:
-                print(f"[{Colors.RED}-{Colors.ENDC}]   Taken    : {Colors.CYAN}{name}{Colors.ENDC},    RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC},  proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
+                print(f"[{Colors.RED}-{Colors.ENDC}]   Taken    : {Colors.CYAN}{name}{Colors.ENDC}, {' '*(longest_name-len(name))}RPS : {Colors.CYAN}{RPS} / s{Colors.ENDC},  resp : {Colors.CYAN}{json}{Colors.ENDC},  proxy : {Colors.CYAN}{proxy_formated}{Colors.ENDC}")
        
         queue.task_done()                
 
