@@ -283,7 +283,9 @@ def TITLE_SPINNER():
             sleep(1)
 
 threading.Thread(target=RPS_CALCULATOR, daemon=True).start()
-threading.Thread(target=TITLE_SPINNER, daemon=True).start()
+# Start the title spinner only if the os is windows
+if os.name == "nt":
+    threading.Thread(target=TITLE_SPINNER, daemon=True).start()
 
 
 clear()
