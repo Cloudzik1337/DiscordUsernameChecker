@@ -8,9 +8,53 @@ from time import sleep, time
 import traceback
 import random
 import os
-import tls_client
+import requests
+import json
 
+VERSION = "1.0.4"
+
+class Config:
+    """Config class"""
+    def __init__(self):
+        self.config = None
+        self.load_config()
+
+    def load_config(self):
+        with open('config.json', 'a') as f:
+            if os.path.getsize("config.json") == 0:
+                f.write("{}")
+                f.close()
+        
+
+    def get(self, key):
+        with open('config.json', 'r') as f:
+            self.config = json.load(f)
+        try:
+            return self.config[key]
+        except KeyError:
+            return None
+    
+    def set(self, key, value):
+        with open('config.json', 'r') as f:
+            self.config = json.load(f)
+        self.config[key] = value
+        with open('config.json', 'w') as f:
+            json.dump(self.config, f, indent=4)
+        
+    def get_all(self):
+        with open('config.json', 'r') as f:
+            self.config = json.load(f)
+        return self.config
+
+
+
+config = Config()
 lock = threading.Lock()
+
+confirmators =  ["y", "yes", "1", "true", "t"]
+negators =      ["n", "no", "0", "false", "f"]
+
+
 with open("names.txt",              "a",        encoding='utf-8') as f: f.close()
 with open("proxies.txt",            "a",        encoding='utf-8') as f: f.close()
 with open("unchecked_names.txt",    "a",        encoding='utf-8') as f: f.close()
@@ -78,24 +122,21 @@ Colors = _Colors()
 def clear():
     """Clear the screen"""
     os.system('cls' if os.name=='nt' else 'clear')
+
 clear()
+
 class Pomelo:
     """Cloud Checker"""
     def __init__(self):
         """Initiate the class"""
         self.endpoint = "https://discord.com/api/v9"
         self.headers_post = {"Content-Type": "application/json"}
-        self.session = tls_client.Session(
-            client_identifier=REQUETS_CLIENT_IDENTIFIER,
-            random_tls_extension_order=True
-        )  
+        self.session = requests.Session()
 
     def restart_session(self):
         """Restart the session"""
-        self.session = tls_client.Session(
-            client_identifier=REQUETS_CLIENT_IDENTIFIER,
-            random_tls_extension_order=True            
-        )
+        requests.Session.close(self.session)
+        self.session = requests.Session()
 
     def check(self, name: list):
         """Check if the name is available"""
@@ -182,6 +223,7 @@ $R@i.~~ !     :   ~$$$$$B$$en:``
                     {r}@{x}  Cloud 2023                  {r}@{x}
                     {r}@{x}  github.com/cloudzik1377     {r}@{x}
                     {r}@{x}  discord.cloudzik.me         {r}@{x}
+                    {r}@{x}  Version: {VERSION}              {r}@{x}
         """
 clear()
 print(ASCII)
@@ -194,8 +236,27 @@ CHARS = string.ascii_lowercase + string.digits + "_" + '.'
 with open("unchecked_names.txt", "r") as f:
     combos = f.read().splitlines()
     f.close()
+with open("config.json", "r") as f:
+    config_str = f.read()
+    f.close()
+if len(config_str) == 2 or os.path.getsize("config.json") == 0:
+    ask_webhook = input(f"Send hits to webhook [y/n] {Colors.YELLOW}>>>{Colors.ENDC} ")
+    if ask_webhook.lower() in confirmators:
+        webhook = input(f"Webhook url {Colors.YELLOW}>>>{Colors.ENDC} ")
+        config.set("webhook", webhook)
+        print(f"{Colors.MAGENTA}Use <name> to send the name of the hit \nuse <@userid> to mention the user (replace user id with actuall id)\n<time> to send timestamp of the hit\nUse <RPS> to send requests per second\nUse <elapsed> to send elapsed time{Colors.ENDC}")
+        message = input(f"Message to send {Colors.YELLOW}>>>{Colors.ENDC} ")
+        config.set("message", message)
+    else:
+        config.set("webhook", None)
+    
+
+
+
+
 
 if len(combos) == 0:
+    
     combos = itertools.product(CHARS, repeat=int(input("Length of username: ")))
     with open("unchecked_names.txt", "w", encoding='utf-8') as f:
         
@@ -269,7 +330,9 @@ def RPS_CALCULATOR():
         RPS_BEFORE = REQUESTS
         sleep(1)
         RPS = REQUESTS - RPS_BEFORE
+
 start_time = time()        
+
 def TITLE_SPINNER():
     """Fix for windows 11 console"""
     TITLE = ["CloudChecker", "Avaible : {WORKS}", "Taken : {TAKEN}", "Requests : {REQUESTS}", "RPS : {RPS}", "Elapsed : {ELAPSED}s"]
@@ -282,11 +345,94 @@ def TITLE_SPINNER():
                 sleep(0.01)
             sleep(1)
 
+def WEBHOOK_PROCESSOR():
+    """Process webhook
+    Note: this function is terrible and needs to be rewritten but it works so i dont care"""
+    webhook = config.get("webhook")
+    message = config.get("message")
+    start_time = time()  # Record the start time
+
+    def return_diff(old, new):
+        """Return the difference between two lists"""
+        return list(set(new) - set(old))
+
+    names = []
+    last_send_time = time()  # Initialize the last send time
+
+    with open("names.txt", "r", encoding='utf-8') as f:
+            names = f.read().splitlines()
+    
+    while True:
+        old_names = names
+        last_send_time = 0
+        with open("names.txt", "r", encoding='utf-8') as f:
+            names = f.read().splitlines()
+        
+        names_diff = return_diff(old_names, names)
+        
+
+        if len(names_diff) > 1 and last_send_time-time() < 5: #if we get hits frequently and user is not scaning for super rare names we switch to batch mode
+            # wait until atleast 10 to send
+            old_names = names
+            old_diff = names_diff
+            while len(names_diff) < 10-len(names_diff):
+                with open("names.txt", "r", encoding='utf-8') as f:
+                    names = f.read().splitlines()
+                    f.close()
+                names_diff = return_diff(old_names, names)
+      
+                sleep(0.3)
+
+            payload = []
+
+            for name in names_diff + old_diff:
+                current_time = time()
+                hittime = round(current_time)
+                hittime = f'<t:{hittime}:T>'
+                msg = message.replace("<name>", name).replace("<time>", str(hittime)).replace("<elapsed>", str(round(current_time - start_time))).replace("<RPS>", str(RPS))
+                payload.append(
+                    msg
+                )
+            
+            json = {"content": "\n".join(payload), 'username': 'CloudChecker', 'avatar_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Burning_Yellow_Sunset.jpg/1280px-Burning_Yellow_Sunset.jpg'}
+            
+            x = CLOUDCHECKER.session.post(
+                url=webhook,
+                json=json
+            )
+            
+            # Rate limit
+            if x.status_code == 429:
+                sleep(x.json()["retry_after"])
+
+            # Update the last send time after sending the batch
+            last_send_time = time()
+            sleep(0.5)  # Sleep for 0.5 seconds between batches
+        elif len(names_diff) == 1:
+            name = names_diff[0]
+            current_time = time()
+            hittime = f'<t:{round(current_time)}:T>'
+            json = {"content": message.replace("<name>", name).replace("<time>", str(hittime)).replace("<elapsed>", str(round(current_time - start_time))).replace("<RPS>", str(RPS)), 'username': 'CloudChecker', 'avatar_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Burning_Yellow_Sunset.jpg/1280px-Burning_Yellow_Sunset.jpg'}
+            x = CLOUDCHECKER.session.post(
+                url=webhook,
+                json=json
+            )
+            if x.status_code == 429:
+                sleep(x.json()["retry_after"])
+
+
+        sleep(1)
+
+
+
 threading.Thread(target=RPS_CALCULATOR, daemon=True).start()
+
 # Start the title spinner only if the os is windows
 if os.name == "nt":
     threading.Thread(target=TITLE_SPINNER, daemon=True).start()
 
+if config.get("webhook") is not None:
+    threading.Thread(target=WEBHOOK_PROCESSOR, daemon=True).start()
 
 clear()
 print(ASCII)
