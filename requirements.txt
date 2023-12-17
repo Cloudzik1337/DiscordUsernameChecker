@@ -1,2 +1,2 @@
 nltk
-tls_client
+requests
