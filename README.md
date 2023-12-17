@@ -33,8 +33,11 @@ https://github.com/Cloudzik1337/DiscordUsernameChecker/assets/92876777/8066235e-
 
 https://github.com/Cloudzik1337/DiscordUsernameChecker/assets/92876777/757d3d04-603e-449c-83c8-817e1f5c1f3c
 
-### Text Tutorial
 
+### For windows user
+1. Run `run.bat`
+   
+### Text Tutorial
 1. Clone the repository:
 
 ```bash
