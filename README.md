@@ -25,7 +25,7 @@ https://github.com/Cloudzik1337/DiscordUsernameChecker/assets/92876777/8066235e-
 
 ### Prerequisites
 - Python 3.x
-- tls_client
+- requests
 
 ## Installation
 
