@@ -177,7 +177,7 @@ class Pomelo:
                     if proxy is None or proxy == "None" or proxy == "":
 
                         print("PROXYLESS RATELIMITED SLEEPING")
-                        sleep(r.json()["retry_after"]/1000)
+                        sleep(r.json()["retry_after"])
                         name = [name, next(proxy_cycle)]
                         self.check(name)
 
@@ -379,20 +379,45 @@ def WEBHOOK_PROCESSOR():
             # wait until atleast 10 to send
             old_names = names
             old_diff = names_diff
-            while len(names_diff) < 10-len(names_diff):
+            inloop_start = time()
+            
+            new_names = []
+
+            while len(names_diff) < 10 - len(names_diff):
+                # calculate if in loop for more than 10 seconds
                 with open("names.txt", "r", encoding='utf-8') as f:
                     names = f.read().splitlines()
-                    f.close()
+
                 names_diff = return_diff(old_names, names)
-      
+
+                for name in names_diff:
+                    
+                    if name not in str(new_names):
+                        
+                        new_name = name + ":!#:!#" + str(round(time()))
+                        new_names.append(new_name)
+
+                if time() - inloop_start > 10:
+                    break
+
                 sleep(0.3)
 
-            payload = []
+            # Extend names_diff with the new names
+          
+            names_diff.extend(new_names)
 
-            for name in names_diff + old_diff:
+
+            payload = []
+            #names_diff reversed so the oldest hits are sent first
+            for name in names_diff[::-1]:
                 current_time = time()
                 hittime = round(current_time)
+                
+                if ":!#:!#" in name:
+                    name, hittime = name.split(":!#:!#")
+                    
                 hittime = f'<t:{hittime}:T>'
+
                 msg = message.replace("<name>", name).replace("<time>", str(hittime)).replace("<elapsed>", str(round(current_time - start_time))).replace("<RPS>", str(RPS))
                 payload.append(
                     msg
