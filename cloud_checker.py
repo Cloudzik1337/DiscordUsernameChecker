@@ -225,7 +225,7 @@ class Pomelo:
             self.proxies_not_working.append(proxy)
         
         
-    def check(self, name: list):
+    def  check(self, name: list):
         """Check if the name is available"""
 
     
@@ -243,7 +243,7 @@ class Pomelo:
                         proxy = next(proxy_cycle)
                         if len(self.proxies_not_working) >= len(proxies):
                             Logger.log(f"Exiting because all proxies are not working")
-                            print(f"\n{Colors.RED}No proxies left{Colors.ENDC}")
+                            
                             DEACTIVATE = True
                             # clear queue
                             Logger.log(f"Clearing queue")
@@ -251,9 +251,9 @@ class Pomelo:
                                 queue.get()
                                 queue.task_done()
                             Logger.log(f"Queue cleared")
-                            Logger.log(f"Sleeping for {self.timeout+5} seconds")
-                            sleep(self.timeout+5)
-                            sys.exit(0)
+                            sleep(self.timeout+1)
+                            print(f"\n{Colors.RED}No proxies left{Colors.ENDC}"*3)
+                            
                             
                         while proxy in self.proxies_not_working:
                             proxy = next(proxy_cycle)
@@ -276,16 +276,16 @@ class Pomelo:
                 if r.status_code in [200, 201, 204]:
                     if str(r.json()) in ["", None, "{}"]:
                         Logger.log(f"Unexpected response resp = {r.text}")
-                        return False, None, r.status_code
+                        return self.check(name)
                     
 
                     elif r.json()["taken"]:
                         TAKEN += 1
-                        return False, r.json(), r.status_code
+                        return [False, r.json(), r.status_code]
 
                     elif not r.json()["taken"]:
                         WORKS += 1
-                        return True, r.json(), r.status_code
+                        return [True, r.json(), r.status_code]
 
                 #rate limited
                 elif r.status_code == 429:
@@ -294,25 +294,25 @@ class Pomelo:
                         print("PROXYLESS RATELIMITED SLEEPING")
                         sleep(r.json()["retry_after"])
                         name = [name, next(proxy_cycle)]
-                        self.check(name)
+                        return self.check(name)
                 else:
                     Logger.log(f"Unknown error with request {r.status_code}    |   {r.json()}")
 
             except requests.exceptions.ProxyError:
                 self.proxy_err(name, proxy, proxy_cycle)
-                self.check(name)
+                return self.check(name)
 
             except requests.exceptions.ConnectionError:
                 self.proxy_err(name, proxy, proxy_cycle)
-                self.check(name)
+                return self.check(name)
             
             except requests.exceptions.ReadTimeout:
                 self.proxy_err(name, proxy, proxy_cycle)
-                self.check(name)
+                return self.check(name)
             
             except MaxRetryError:
                 self.proxy_err(name, proxy, proxy_cycle)
-                self.check(name)
+                return self.check(name)
 
 
 
@@ -328,7 +328,7 @@ class Pomelo:
                         sleep(0.3) # rest for 1s
                     except:
                         pass
-
+                return self.check(name)
 
 g = Colors.GREY
 r = Colors.RED
@@ -463,12 +463,13 @@ def worker():
         
         name = queue.get()
         try:
-            available, json, status_code = CLOUDCHECKER.check(name)
+            x = CLOUDCHECKER.check(name)
+            available, json, status_code = x
         except:
             with lock:
                 exception = traceback.format_exc()
                 with open("logs/error.txt", "a", encoding='utf-8') as f:
-                    f.write(f"{exception}\n")
+                    f.write(f"{exception}\nreturned={x}")
                     f.close()
             available, json, status_code = "ERROR", None, None
         name, proxy = name
@@ -660,7 +661,7 @@ Logger.log(f"Started {ask} threads")
 queue.join()
 
 print(f"[{Colors.GREEN}+{Colors.ENDC}] Done")
-print(f"[{Colors.GREEN}+{Colors.ENDC}] Total requests = {Colors.CYAN}{REQUESTS}{Colors.ENDC}")
+print(f"[{Colors.GREEN}+{Colors.ENDC}] Total requests = {Colors.CYAN}{REQUESTS}{Colors.ENDC} Note: requests wont equal to hits + taken because of sometimes requests are rate limited")
 print(f"[{Colors.GREEN}+{Colors.ENDC}] Total valid names = {Colors.CYAN}{WORKS}{Colors.ENDC}")
 print(f"[{Colors.GREEN}+{Colors.ENDC}] Total invalid names = {Colors.CYAN}{TAKEN}{Colors.ENDC}")
 print(f"[{Colors.GREEN}+{Colors.ENDC}] Total time = {Colors.CYAN}{round(time()-start_time)}{Colors.ENDC} seconds")
