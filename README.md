@@ -42,7 +42,7 @@ https://github.com/Cloudzik1337/DiscordUsernameChecker/assets/92876777/757d3d04-
 
 ```bash
 git clone https://github.com/Cloudzik1337/DiscordUsernameChecker.git
-cd CloudChecker
+cd DiscordUsernameChecker
 ```
 2. Install requirements
 ```bash
