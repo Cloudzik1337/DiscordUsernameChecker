@@ -41,7 +41,7 @@ https://github.com/Cloudzik1337/DiscordUsernameChecker/assets/92876777/757d3d04-
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/cloudzik1377/CloudChecker.git
+git clone https://github.com/Cloudzik1337/DiscordUsernameChecker.git
 cd CloudChecker
 ```
 2. Install requirements
