@@ -64,5 +64,5 @@ python cloud_checker.py
 2. Enter ammount of thread (for smaller than 5k dont use more than 5)
 3. Similiar + Hits will be saved to BetterNames.txt
 ## Additional Information
-1. Author: @cloudzik1377
+1. Author: @cloudzik1337
 2. Discord: discord.cloudzik.me
