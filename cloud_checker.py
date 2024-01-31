@@ -356,7 +356,7 @@ $R@i.~~ !     :   ~$$$$$B$$en:``
 ?MXT@Wx.~    :     ~"##*$$$$M~
 
                     {r}@{x}  Cloud 2023                  {r}@{x}
-                    {r}@{x}  github.com/cloudzik1377     {r}@{x}
+                    {r}@{x}  github.com/cloudzik1337     {r}@{x}
                     {r}@{x}  discord.cloudzik.me         {r}@{x}
                     {r}@{x}  Version: {VERSION}              {r}@{x}
         """
