@@ -1,7 +1,8 @@
 
 [![Hits](https://hits.sh/github.com/Cloudzik1337/DiscordUsernameChecker.svg)](https://hits.sh/github.com/silentsoft/Cloudzik1337/DiscordUsernameChecker)
 [![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
-[# CloudChecker !!Tokenless!!](https://guns.lol/cloudzik1337)
+
+[CloudChecker !!Tokenless!!](https://guns.lol/cloudzik1337)
 
 CloudChecker is a Python script for checking the availability of Discord usernames using a list of combinations and proxies. It leverages multi-threading to perform checks concurrently.
 
