@@ -13,3 +13,4 @@ discord.txt
 build/
 dist/
 *.spec
+build.sh
