@@ -9,3 +9,7 @@ results/hits.txt
 logs/
 old/
 newreadme.md
+discord.txt
+build/
+dist/
+*.spec
