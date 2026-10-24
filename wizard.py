@@ -4,8 +4,6 @@
 from __future__ import annotations
 
 import asyncio
-import itertools
-import random
 import re
 import sys
 from pathlib import Path
@@ -23,7 +21,7 @@ from config import (
     RunConfig,
     ensure_dir,
     ensure_file,
-    is_valid_username,
+    generate_username_candidates,
     load_lines,
 )
 from ui import (
@@ -251,21 +249,7 @@ def _step_usernames() -> list[str]:
     if mode == "generate":
         length = IntPrompt.ask("Username length", default=4, choices=["2", "3", "4", "5"])
         total = len(USERNAME_CHARS) ** length
-
-        if length >= 5:
-            # Too many combos for itertools.product (79M for 5 chars)
-            ok(f"Generating 50000 random {length}-char usernames (of {total:,} possible)...")
-            seen: set[str] = set()
-            usernames = []
-            while len(usernames) < 50000:
-                cand = "".join(random.choices(USERNAME_CHARS, k=length))
-                if cand not in seen and is_valid_username(cand):
-                    seen.add(cand)
-                    usernames.append(cand)
-        else:
-            combos = ["".join(c) for c in itertools.product(USERNAME_CHARS, repeat=length)]
-            usernames = [c for c in combos if is_valid_username(c)]
-            usernames = random.sample(usernames, min(50000, len(usernames)))
+        usernames = generate_username_candidates(length, limit=50000)
 
         ensure_file(DEFAULT_NAMES_FILE)
         Path(DEFAULT_NAMES_FILE).write_text("\n".join(usernames), encoding="utf-8")

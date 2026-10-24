@@ -43,6 +43,7 @@ from config import (
     Stats,
     ensure_dir,
     ensure_file,
+    generate_username_candidates,
 )
 from proxy import ProxyManager
 from engine import (
@@ -81,12 +82,36 @@ def parse_args() -> AppSettings:
         help="Skip setup wizard – use saved config and last proxies/usernames",
     )
     parser.add_argument(
+        "--username-length",
+        type=int,
+        choices=range(2, 33),
+        default=None,
+        help="Generate a username list of this length and save it before checking.",
+    )
+    parser.add_argument(
+        "--three-letter",
+        "--3l",
+        action="store_true",
+        help="Quick preset to generate and check 3-character usernames.",
+    )
+    parser.add_argument(
+        "--generate-only",
+        action="store_true",
+        help="Generate the username list and exit without running the checker.",
+    )
+    parser.add_argument(
         "--version",
         action="version",
         version=f"CloudChecker v{__import__('config').VERSION}",
     )
     args = parser.parse_args()
-    return AppSettings(debug=args.debug, no_wizard=args.no_wizard)
+    return AppSettings(
+        debug=args.debug,
+        no_wizard=args.no_wizard,
+        username_length=args.username_length,
+        generate_only=args.generate_only,
+        three_letter=args.three_letter,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -324,6 +349,16 @@ def main() -> None:
     config = Config()
 
     try:
+        name_length = settings.username_length or (3 if settings.three_letter else None)
+        if name_length is not None:
+            usernames = generate_username_candidates(name_length, limit=50000)
+            names_file = DATA_DIR / "names_to_check.txt"
+            names_file.write_text("\n".join(usernames), encoding="utf-8")
+            console.print(f"[{C.SUCCESS}]Generated {len(usernames)} {name_length}-character usernames into {names_file}[/]")
+            if settings.generate_only:
+                return
+            config.set("last_names_file", str(names_file))
+
         if settings.no_wizard:
             # Quick start: load from config + saved files
             from config import load_lines
