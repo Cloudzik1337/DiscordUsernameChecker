@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import itertools
 import json
+import random
 import string
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -68,6 +70,31 @@ def load_lines(filepath: str | Path) -> list[str]:
     return [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
+def generate_username_candidates(length: int, limit: int = 50000) -> list[str]:
+    """Generate a randomized sample of valid Discord usernames for a fixed length.
+
+    The helper can generate a full candidate set for short lengths (2–4 chars)
+    and a capped random sample for longer lengths, matching the project's existing
+    wizard behavior while keeping the logic reusable from CLI presets.
+    """
+    if not (2 <= length <= 32):
+        raise ValueError("Discord username length must be between 2 and 32 characters.")
+
+    if length >= 5:
+        seen: set[str] = set()
+        usernames: list[str] = []
+        while len(usernames) < min(limit, 50000):
+            cand = "".join(random.choices(USERNAME_CHARS, k=length))
+            if cand not in seen and is_valid_username(cand):
+                seen.add(cand)
+                usernames.append(cand)
+        return usernames
+
+    combos = ["".join(c) for c in itertools.product(USERNAME_CHARS, repeat=length)]
+    usernames = [c for c in combos if is_valid_username(c)]
+    return random.sample(usernames, min(limit, len(usernames)))
+
+
 def is_valid_username(name: str) -> bool:
     """Check whether a username passes Discord's basic client-side rules.
 
@@ -127,6 +154,9 @@ class AppSettings:
     debug: bool = False
     verbose: bool = False
     no_wizard: bool = False
+    username_length: int | None = None
+    generate_only: bool = False
+    three_letter: bool = False
 
 
 @dataclass

@@ -60,6 +60,20 @@ python checker.py
 
 Or: `./run.sh` (macOS/Linux only) — the wizard handles everything.
 
+### Three-letter sniper mode
+
+If you want a fast 3-character username sweep, generate and check a 3-letter list directly:
+
+```bash
+python checker.py --three-letter
+```
+
+You can also generate a custom-length list without entering the wizard:
+
+```bash
+python checker.py --username-length 3 --generate-only
+```
+
 ---
 
 ## 🖥️ Live Dashboard
